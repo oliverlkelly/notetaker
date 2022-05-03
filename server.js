@@ -24,8 +24,9 @@ app.get('/notes', (req, res) =>
 );
 
 app.get('/api/notes', (req, res) => {
-    fs.readFile('./db/db.json', (err, notes) =>{
+    fs.readFile('./db/db.json', (err, notes) => {
         if(err){
+            res.json(500);
             console.log("Error reading data");
         }
         else{
@@ -44,6 +45,7 @@ app.post('/api/notes', (req, res) => {
     }
     fs.readFile('./db/db.json', (err, data) => {
       if(err){
+        res.json(500);
         console.log(err);
       }
       else{
@@ -51,6 +53,7 @@ app.post('/api/notes', (req, res) => {
         notes.push(note);
         fs.writeFile('./db/db.json', JSON.stringify(notes), err => {
           if(err){
+            res.json(500);
             console.log(err);
           }
         });
@@ -58,6 +61,29 @@ app.post('/api/notes', (req, res) => {
     });
     return res.json("Success");
   }
+});
+
+app.delete('/api/notes/:id', (req, res) => {
+  const noteID = req.params.id;
+  fs.readFile('./db/db.json', (err, data) => {
+    if(err){
+      res.json(500);
+      console.log(err);
+    }
+    else{
+      const oldNotes = JSON.parse(data);
+      const newNotes = oldNotes.filter(n => {
+        return n.id != noteID;
+      });
+      fs.writeFile('./db/db.json', JSON.stringify(newNotes), err => {
+        if(err){
+          res.json(500);
+          console.log(err);
+        }
+      });
+      return res.json("Successfully deleted note");
+    }
+  })
 });
 
 app.listen(PORT, () =>
